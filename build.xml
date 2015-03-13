@@ -78,17 +78,7 @@
   <property file="build.properties" />
 
   <!-- gather release version -->
-  <target name="relversion">
-    <exec outputproperty="build.relVersion"
-      executable="git"
-      failonerror="false"
-      failifexecutionfails="false"
-      dir=".">
-      <arg value="describe"/>
-      <arg value="--tag"/>
-      <arg value="--always"/>
-    </exec>
-  </target>
+  <property name="build.relVersion" value="v20150126-186-gef15959.magicsnowflake" />
 
   <target name="protobuf-gen">
     <fileset dir="${src.dir}" id="proto.classpath">
@@ -130,8 +120,7 @@
   </target>
 
   <target name="compile"
-          description="compile the source code"
-          depends="relversion">
+          description="compile the source code">
     <mkdir dir="${classes.dir}" />
     <javac srcdir="${gen.dir}"
            destdir="${classes.dir}"
