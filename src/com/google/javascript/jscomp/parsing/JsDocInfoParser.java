@@ -2057,11 +2057,14 @@ public final class JsDocInfoParser {
 
   /**
    * BasicTypeExpression := '*' | 'null' | 'undefined' | TypeName
-   *     | FunctionType | UnionType | RecordType
+   *     | FunctionType | UnionType | RecordType | ArrayType
    */
   private Node parseBasicTypeExpression(JsDocToken token) {
     if (token == JsDocToken.STAR) {
       return newNode(Token.STAR);
+    } else if (token == JsDocToken.LEFT_SQUARE) {
+      skipEOLs();
+      return parseArrayType(next());
     } else if (token == JsDocToken.LEFT_CURLY) {
       skipEOLs();
       return parseRecordType(next());
@@ -2366,6 +2369,47 @@ public final class JsDocInfoParser {
       return firstChild;
     }
     return union;
+  }
+
+  /**
+   * ArrayType := '[' ElementTypeList ']'
+   * ElementTypeList := <empty> | TypeExpression | '...' TypeExpression
+   *     | TypeExpression ',' ElementTypeList
+   */
+  private Node parseArrayType(JsDocToken token) {
+    Node array = newNode(Token.LB);
+    Node arg = null;
+    boolean hasVarArgs = false;
+
+    do {
+      if (arg != null) {
+        next();
+        skipEOLs();
+        token = next();
+      }
+      if (token == JsDocToken.ELLIPSIS) {
+        arg = wrapNode(Token.ELLIPSIS, parseTypeExpression(next()));
+        hasVarArgs = true;
+      } else {
+        arg = parseTypeExpression(token);
+      }
+
+      if (arg == null) {
+        return null;
+      }
+
+      array.addChildToBack(arg);
+      if (hasVarArgs) {
+        break;
+      }
+      skipEOLs();
+    } while (match(JsDocToken.COMMA));
+
+    if (!match(JsDocToken.RIGHT_SQUARE)) {
+      return reportTypeSyntaxWarning("msg.jsdoc.missing.rb");
+    }
+    next();
+    return array;
   }
 
   /**

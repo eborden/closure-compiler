@@ -529,6 +529,12 @@ public class JsDocInfoParserTest extends BaseJSTypeTestCase {
         "function (...(Object|null)): (boolean|null)");
   }
 
+  public void testParseFunctionalType11() throws Exception {
+    testParseType(
+        "function(...[[number]]):[number?]",
+        "function (...[Array]): Array");
+  }
+
   public void testParseFunctionalType12() throws Exception {
     testParseType(
         "function(...)",
@@ -668,24 +674,21 @@ public class JsDocInfoParserTest extends BaseJSTypeTestCase {
         "constructed type must be an object type");
   }
 
-  public void testParseFunctionalTypeError13() throws Exception {
-    parse("@type {function (...[number]): boolean} */",
-        "Bad type annotation. type not recognized due to syntax error");
+  public void testParseArrayType1() throws Exception {
+    testParseType("[number]", "Array");
   }
 
-  public void testParseFunctionalTypeError14() throws Exception {
-    parse("@type {function (number, ...[string]): boolean} */",
-        "Bad type annotation. type not recognized due to syntax error");
+  public void testParseArrayType2() throws Exception {
+    testParseType("[(number,boolean,[Object?])]", "Array");
   }
 
-  public void testParseFunctionalType8() throws Exception {
-    parse("@type {function(this:Array,...[boolean])} */",
-        "Bad type annotation. type not recognized due to syntax error");
+  public void testParseArrayType3() throws Exception {
+    testParseType("[[number],[string]]?", "(Array|null)");
   }
 
   public void testParseArrayTypeError1() throws Exception {
     parse("@type {[number}*/",
-        "Bad type annotation. type not recognized due to syntax error");
+        "Bad type annotation. missing closing ]");
   }
 
   public void testParseArrayTypeError2() throws Exception {
@@ -695,17 +698,12 @@ public class JsDocInfoParserTest extends BaseJSTypeTestCase {
 
   public void testParseArrayTypeError3() throws Exception {
     parse("@type {[(number,boolean,Object?])]}*/",
-        "Bad type annotation. type not recognized due to syntax error");
+        "Bad type annotation. missing closing )");
   }
 
   public void testParseArrayTypeError4() throws Exception {
     parse("@type {(number,boolean,[Object?)]}*/",
-        "Bad type annotation. type not recognized due to syntax error");
-  }
-
-  public void testParseArrayTypeError5() throws Exception {
-    parse("@type {[Object]}*/",
-        "Bad type annotation. type not recognized due to syntax error");
+        "Bad type annotation. missing closing ]");
   }
 
   private JSType testParseType(String type) throws Exception {
